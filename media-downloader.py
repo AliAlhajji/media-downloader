@@ -1,7 +1,12 @@
 from pytube import YouTube
 from sclib import SoundcloudAPI, Track
-from os import path, rename
+from os import path, rename, mkdir
 
+## Folders names
+soundcloud_folder = 'SoundCloud'
+youtube_folder = 'YouTube'
+
+#Download files from YouTube
 def youtube_download():
     link = ""
     while link == "":
@@ -15,13 +20,14 @@ def youtube_download():
     streams = yt.streams
 
     if file_type.lower() == "mp3":
-        audio_file = streams.get_audio_only().download('./YouTube/')
+        audio_file = streams.get_audio_only().download(youtube_folder)
         base, ext = path.splitext(audio_file)
         rename(audio_file, '{}.mp3'.format(base))
     else:
         video = streams.filter(mime_type='video/mp4').first()
-        video.download('./YouTube/')
+        video.download(youtube_folder)
 
+#Download files from SoundCloud
 def soundcloud_download():
     link = ""
     while link == "":
@@ -31,10 +37,16 @@ def soundcloud_download():
     track = api.resolve(link)
     file_name = ''.join([char for char in track.title if char not in '<>:"/\|?*'])
     file_name = '{}.mp3'.format(file_name)
-    with open('./SoundCloud/{}'.format(file_name), 'wb+') as file:
+    with open('./{}/{}'.format(soundcloud_folder, file_name), 'wb+') as file:
         track.write_mp3_to(file)
 
+#Create the folders if they dont already exist
+if not path.exists(youtube_folder):
+    mkdir(youtube_folder)
+if not path.exists(soundcloud_folder):
+    mkdir(soundcloud_folder)
 
+#Select the website and run the proper downloader function
 website = ''
 while website not in ['1', '2']:
     website = input('> Type 1 for YouTube, 2 for SoundCloud: ')
